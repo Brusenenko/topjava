@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class UserMealsUtil {
     public static void main(String[] args) {
@@ -30,13 +31,10 @@ public class UserMealsUtil {
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
 
         Map<LocalDate, Integer> map = new HashMap<>();
-        int calorie;
 
         for (UserMeal userMeal : meals) {
-            calorie = map.get(userMeal.getDateTime().toLocalDate()) == null
-                    ? userMeal.getCalories()
-                    : map.get(userMeal.getDateTime().toLocalDate()) + userMeal.getCalories();
-            map.put(userMeal.getDateTime().toLocalDate(), calorie);
+            map.put(userMeal.getDateTime().toLocalDate(),
+                    map.getOrDefault(userMeal.getDateTime().toLocalDate(), 0) + userMeal.getCalories());
         }
 
         List<UserMealWithExcess> list = new ArrayList<>();
