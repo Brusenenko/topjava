@@ -20,7 +20,7 @@ import java.util.Objects;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class MealServlet extends HttpServlet {
-    private static final Logger log = getLogger(UserServlet.class);
+    private static final Logger log = getLogger(MealServlet.class);
 
     private MealService mealService;
 
@@ -35,7 +35,9 @@ public class MealServlet extends HttpServlet {
         String action = request.getParameter("action");
         switch (action == null ? "all" : action) {
             case "delete":
-                mealService.delete(Integer.parseInt(Objects.requireNonNull(request.getParameter("id"))));
+                int id = Integer.parseInt(Objects.requireNonNull(request.getParameter("id")));
+                mealService.delete(id);
+                log.info("Delete {}", id);
                 response.sendRedirect("meals");
                 break;
             case "create":
@@ -46,7 +48,9 @@ public class MealServlet extends HttpServlet {
                 request.setAttribute("meal", mealService.get(Integer.parseInt(Objects.requireNonNull(request.getParameter("id")))));
                 request.getRequestDispatcher("/createMeal.jsp").forward(request, response);
                 break;
+            case "all":
             default:
+                log.info("getAll");
                 request.setAttribute("meals",
                         MealsUtil.filteredByStreams(mealService.getAll(), LocalTime.MIN, LocalTime.MAX, 2000));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
@@ -64,6 +68,7 @@ public class MealServlet extends HttpServlet {
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")));
 
+        log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
         mealService.save(meal);
         response.sendRedirect("meals");
     }

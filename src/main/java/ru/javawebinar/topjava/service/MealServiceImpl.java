@@ -11,8 +11,9 @@ public class MealServiceImpl implements MealService {
     private final MealRepository repository = new InMemoryMealRepository();
 
     @Override
-    public void save(Meal meal) {
+    public Meal save(Meal meal) {
         repository.save(meal);
+        return meal;
     }
 
     @Override

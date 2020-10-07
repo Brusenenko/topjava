@@ -18,11 +18,12 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     @Override
-    public void save(Meal meal) {
+    public Meal save(Meal meal) {
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
         }
         repository.put(meal.getId(), meal);
+        return meal;
     }
 
     @Override
