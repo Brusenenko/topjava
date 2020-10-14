@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.util.MealsUtil;
-import ru.javawebinar.topjava.web.SecurityUtil;
 
 import java.util.Collection;
 import java.util.Map;
@@ -20,19 +19,13 @@ public class InMemoryMealRepository implements MealRepository {
     private final AtomicInteger counter = new AtomicInteger(0);
 
     {
-        MealsUtil.meals.forEach(meal -> save(SecurityUtil.authUserId(), meal));
+        MealsUtil.meals.forEach(meal -> save(1, meal));
     }
 
     @Override
     public Meal save(int userId, Meal meal) {
         log.info("save {}", meal);
-        Map<Integer, Meal> userMeals;
-        if (repository.get(userId) == null) {
-            userMeals = new ConcurrentHashMap<>();
-            repository.put(userId, userMeals);
-        } else {
-            userMeals = repository.get(userId);
-        }
+        Map<Integer, Meal> userMeals = repository.computeIfAbsent(userId, ConcurrentHashMap::new);
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
             return userMeals.put(meal.getId(), meal);
@@ -44,14 +37,14 @@ public class InMemoryMealRepository implements MealRepository {
     public boolean delete(int userId, int id) {
         log.info("delete {}", id);
         Map<Integer, Meal> meals = repository.get(userId);
-        return meals.remove(id) != null;
+        return meals != null && meals.remove(id) != null;
     }
 
     @Override
     public Meal get(int userId, int id) {
         log.info("get {}", id);
         Map<Integer, Meal> meals = repository.get(userId);
-        return meals.get(id);
+        return (meals == null) ? null : meals.get(id);
     }
 
     @Override

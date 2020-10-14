@@ -8,6 +8,8 @@ import ru.javawebinar.topjava.repository.MealRepository;
 
 import java.util.Collection;
 
+import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
+
 @Service
 public class MealService {
     private static final Logger log = LoggerFactory.getLogger(MealService.class);
@@ -24,12 +26,12 @@ public class MealService {
 
     public void delete(int userId, int id) {
         log.info("delete {}", id);
-        repository.delete(userId, id);
+        checkNotFoundWithId(repository.delete(userId, id), id);
     }
 
     public Meal get(int userId, int id) {
         log.info("get {}", id);
-        return repository.get(userId, id);
+        return checkNotFoundWithId(repository.get(userId, id), id);
     }
 
     public Collection<Meal> getAll(int userId) {
@@ -39,7 +41,6 @@ public class MealService {
 
     public void update(int userId, Meal meal) {
         log.info("update {}", meal);
-        repository.save(userId, meal);
-
+        checkNotFoundWithId(repository.save(userId, meal), meal.getId());
     }
 }
