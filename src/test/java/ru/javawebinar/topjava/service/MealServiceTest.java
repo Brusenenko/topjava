@@ -3,10 +3,10 @@ package ru.javawebinar.topjava.service;
 import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
-import org.junit.rules.TestWatcher;
+import org.junit.rules.Stopwatch;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.ContextConfiguration;
@@ -16,14 +16,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.junit.Assert.assertThrows;
+import static org.slf4j.LoggerFactory.getLogger;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
@@ -35,24 +36,15 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
-    private static final List<String> log = new ArrayList<>();
+    private static final Logger logger = getLogger(MealServiceTest.class);
+    private static final List<String> logList = new ArrayList<>();
 
     @Rule
-    public final TestName name = new TestName();
-
-    @Rule
-    public TestWatcher watcher = new TestWatcher() {
-        private Instant startTime;
-
+    public Stopwatch stopwatch = new Stopwatch() {
         @Override
-        protected void starting(Description description) {
-            startTime = Instant.now();
-        }
-
-        @Override
-        protected void finished(Description description) {
-            log.add(String.format("Duration of %s test: %s millis", name.getMethodName(),
-                    Duration.between(startTime, Instant.now()).toMillis()));
+        protected void finished(long nanos, Description description) {
+            logger.info(String.format("Duration of %s test: %s ms", description.getMethodName(), MILLISECONDS.convert(nanos, NANOSECONDS)));
+            logList.add(String.format("%s test - %s ms", description.getMethodName(), MILLISECONDS.convert(nanos, NANOSECONDS)));
         }
     };
 
@@ -61,7 +53,7 @@ public class MealServiceTest {
 
     @AfterClass
     public static void afterClass() {
-        log.forEach(System.out::println);
+        logger.info(String.join("\n", logList));
     }
 
     @Test
